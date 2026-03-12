@@ -39,7 +39,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Pages\Account\" />
     <Folder Include="TestData\" />
+    <Folder Include="Tests\Account\" />
   </ItemGroup>
 
 </Project>

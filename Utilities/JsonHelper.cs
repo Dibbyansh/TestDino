@@ -15,7 +15,7 @@ public static class JsonHelper
     private static string ResolvePath(string fileName)
     {
         var dir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestData"));
-        Directory.CreateDirectory(dir);            // ensure folder always exists
+        Directory.CreateDirectory(dir);
         return Path.Combine(dir, fileName);
     }
 
@@ -35,7 +35,6 @@ public static class JsonHelper
             return doc.RootElement.Clone();
         });
 
-        // BUG FIX: initialise current from root before walking segments
         JsonElement current = root;
 
         foreach (var segment in token.Split('.'))
@@ -46,38 +45,31 @@ public static class JsonHelper
         return current.Deserialize<T>()!;
     }
 
-    // ─── READ: load the entire file and deserialize to T (for flat objects) ───
+    // ─── WRITE: append an entry to a JSON array section ──────────────────────
     /// <summary>
-    /// Deserializes an entire JSON file to T.
-    /// Useful for reading saved credentials: GetCredentials&lt;UserCredentials&gt;("credentials.json")
+    /// Appends <paramref name="data"/> to a JSON array at <paramref name="sectionKey"/>.
+    /// Creates the array if it does not exist yet.
+    /// Example: AppendToSection("Credentials.json", "NewUserCreated", credentials)
     /// </summary>
-    public static T GetCredentials<T>(string fileName)
+    public static void AppendToSection<T>(string fileName, string sectionKey, T data)
     {
         var path = ResolvePath(fileName);
 
-        var root = _cache.GetOrAdd(path, p =>
-        {
-            var json = File.ReadAllText(p);
-            using var doc = JsonDocument.Parse(json);
-            return doc.RootElement.Clone();
-        });
+        // Load existing file or start with empty object
+        var rootNode = File.Exists(path)
+            ? JsonNode.Parse(File.ReadAllText(path))!.AsObject()
+            : new JsonObject();
 
-        return root.Deserialize<T>()!;
-    }
+        // Get existing array or create a new one
+        var array = rootNode[sectionKey]?.AsArray() ?? new JsonArray();
 
-    // ─── WRITE: serialize any object to a JSON file ───────────────────────────
-    /// <summary>
-    /// Serializes <paramref name="data"/> and writes it to TestData/<paramref name="fileName"/>.
-    /// Also invalidates the cache so the next read picks up the new content.
-    /// </summary>
-    public static void SaveCredentials<T>(string fileName, T data)
-    {
-        var path = ResolvePath(fileName);
+        // Append the new entry
+        array.Add(JsonNode.Parse(JsonSerializer.Serialize(data, _writeOptions)));
 
-        var json = JsonSerializer.Serialize(data, _writeOptions);
-        File.WriteAllText(path, json);
+        rootNode[sectionKey] = array;
 
-        // Invalidate cache so subsequent reads reflect the new file
+        File.WriteAllText(path, rootNode.ToJsonString(_writeOptions));
+
         _cache.TryRemove(path, out _);
     }
 }

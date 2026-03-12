@@ -13,7 +13,7 @@ using TestDino.Utilities;
 namespace TestDino.Tests
 {
     [TestFixture]
-    public class SignUpTest : UnathenticatedBaseTest
+    public class SignUpTest : UnauthenticatedBaseTest
     {
         [SetUp]
         public void Setup()
@@ -27,10 +27,10 @@ namespace TestDino.Tests
         {
             var signupPage = new SignupPage(_driver);
 
-            string title = WaitHelper.WaitForElement(_driver, SignUpSignInLocators.Title_CreateAccount).Text;
+            string title = WaitHelper.WaitForElement(_driver, SignUpLocators.Title_CreateAccount).Text;
             Assert.That(title, Is.EqualTo("Create Account"));
 
-            var credentials = SignupPage.randomCredentials();
+            var credentials = SignupPage.GenerateRandomCredentials();
 
             signupPage.FillSignupForm(
                 credentials["firstName"],
@@ -39,9 +39,9 @@ namespace TestDino.Tests
                 credentials["password"]
             );
 
-            WaitHelper.ClickWhenClickable(_driver, SignUpSignInLocators.Btn_CreateAccount);
+            WaitHelper.ClickWhenClickable(_driver, SignUpLocators.Btn_CreateAccount);
 
-            string toastMessage = WaitHelper.WaitForElement(_driver, SignUpSignInLocators.AccountCreated_ToastMessage).Text;
+            string toastMessage = WaitHelper.WaitForElement(_driver, SignUpLocators.AccountCreated_ToastMessage).Text;
             Assert.That(toastMessage, Does.Contain("Account created successfully!"), "Toast Message was not as expected.");
 
             // assert that the user is redirected to the login page after successful signup
@@ -54,17 +54,26 @@ namespace TestDino.Tests
         public void Signup_UserAlreadyExists()
         {
             var signupPage = new SignupPage(_driver);
-            string title = _driver.FindElement(SignUpSignInLocators.Title_CreateAccount).Text;
+
+            string title = WaitHelper.WaitForElement(_driver, SignUpLocators.Title_CreateAccount).Text;
             Assert.That(title, Is.EqualTo("Create Account"));
+
             // use the same credentials as the previous test to trigger the user already exists error
             // read from credentials.json file
-            var credentials = JsonHelper.GetCredentials<string>("Credentials.json");
+            var allnewUsers = JsonHelper.GetTestData<List<Dictionary<string, string>>>("Credentials.json", "NewUserCreated");
+            var credentials = allnewUsers.Last(); // get the last created user
 
-            signupPage.FillSignupForm(credentials["firstName"], credentials["lastName"], credentials["email"], credentials["password"]
-
+            signupPage.FillSignupForm(
+                credentials["firstName"], 
+                credentials["lastName"], 
+                credentials["email"], 
+                credentials["password"]
             );
 
+            WaitHelper.ClickWhenClickable(_driver, SignUpLocators.Btn_CreateAccount);
 
+            string toastMessage = WaitHelper.WaitForElement(_driver, SignUpLocators.AccountCreated_ToastMessage).Text;
+            Assert.That(toastMessage, Does.Contain("User already Exist"), "Toast Message was not as expected.");
         }
     }
 }

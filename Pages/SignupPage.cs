@@ -1,11 +1,5 @@
 ﻿using OpenQA.Selenium;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TestDino.Base;
-using TestDino.Driver;
 using TestDino.Locators;
 using TestDino.Utilities;
 
@@ -19,38 +13,34 @@ namespace TestDino.Pages
         {
             _driver = driver;
         }
-        
-        public void FillSignupForm(string firstName, string lastName, string email, string password)
+
+        public static Dictionary<string, string> GenerateRandomCredentials()
         {
-            WaitHelper.WaitForElement(_driver, SignUpSignInLocators.Input_firstname).SendKeys(firstName);
-            WaitHelper.WaitForElement(_driver, SignUpSignInLocators.Input_lastname).SendKeys(lastName);
-            WaitHelper.WaitForElement(_driver, SignUpSignInLocators.Input_email).SendKeys(email);
-            WaitHelper.WaitForElement(_driver, SignUpSignInLocators.Input_password).SendKeys(password);
-        }
+            string firstName = "Test" + Guid.NewGuid().ToString("N")[..3];
+            string lastName = "User" + Guid.NewGuid().ToString("N")[..3];
+            string email = $"test{Guid.NewGuid().ToString("N")[..5]}@example.com";
+            string password = "TestPassword" + Guid.NewGuid().ToString("N")[..5];
 
-        public static Dictionary<string,string> randomCredentials()
-        {
-            // generate random firstname and lastname
-            string firstName = "Test" + Guid.NewGuid().ToString("N").Substring(0, 3);
-            string lastName = "User" + Guid.NewGuid().ToString("N").Substring(0, 3);
-
-            // generate random email
-            string email = $"test{Guid.NewGuid().ToString("N").Substring(0, 5)}@example.com";
-
-            // genrate random password
-            string password = "TestPassword" + Guid.NewGuid().ToString("N").Substring(0, 5);
-
-            // store these in a dictionary for easy access
             var credentials = new Dictionary<string, string>
             {
                 { "firstName", firstName },
-                { "lastName", lastName },
-                { "email", email },
-                { "password", password }
+                { "lastName",  lastName  },
+                { "email",     email     },
+                { "password",  password  }
             };
 
-            JsonHelper.SaveCredentials("Credentials.json", credentials);
+            // Save only into the NewUserCreated section, preserving the rest of the file
+            JsonHelper.AppendToSection("Credentials.json", "NewUserCreated", credentials);
+
             return credentials;
+        }
+
+        public void FillSignupForm(string firstName, string lastName, string email, string password)
+        {
+            WaitHelper.WaitForElement(_driver, SignUpLocators.Input_firstname).SendKeys(firstName);
+            WaitHelper.WaitForElement(_driver, SignUpLocators.Input_lastname).SendKeys(lastName);
+            WaitHelper.WaitForElement(_driver, SignUpLocators.Input_email).SendKeys(email);
+            WaitHelper.WaitForElement(_driver, SignUpLocators.Input_password).SendKeys(password);
         }
     }
 }

@@ -10,12 +10,13 @@ using TestDino.Utilities;
 
 namespace TestDino.Base
 {
-    public class UnathenticatedBaseTest
+    [TestFixture]
+    public class UnauthenticatedBaseTest
     {
-        protected IWebDriver _driver;
+        protected IWebDriver _driver = null!;
 
         [SetUp]  // Each test gets fresh state - REQUIRED for login tests
-        public void Setup()
+        public void SetUp()
         {
             _driver = DriverFactory.InitDriver();
         }
