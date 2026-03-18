@@ -32,7 +32,7 @@ namespace TestDino.Utilities
             return wait.Until(d =>
             {
                 var element = d.FindElement(locator);
-                return element.Displayed ? element : null;
+                return (element.Displayed && element.Enabled) ? element : null;
             })!;
         }
 

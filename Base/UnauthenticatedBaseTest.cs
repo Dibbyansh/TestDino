@@ -1,12 +1,5 @@
-﻿using NUnit.Framework.Interfaces;
-using OpenQA.Selenium;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OpenQA.Selenium;
 using TestDino.Driver;
-using TestDino.Utilities;
 
 namespace TestDino.Base
 {
@@ -15,7 +8,7 @@ namespace TestDino.Base
     {
         protected IWebDriver _driver = null!;
 
-        [SetUp]  // Each test gets fresh state - REQUIRED for login tests
+        [SetUp]
         public void SetUp()
         {
             _driver = DriverFactory.InitDriver();

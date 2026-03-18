@@ -1,5 +1,4 @@
 ﻿using OpenQA.Selenium;
-using System.Collections.Generic;
 using TestDino.Locators;
 using TestDino.Utilities;
 
@@ -41,6 +40,14 @@ namespace TestDino.Pages
             WaitHelper.WaitForElement(_driver, SignUpLocators.Input_lastname).SendKeys(lastName);
             WaitHelper.WaitForElement(_driver, SignUpLocators.Input_email).SendKeys(email);
             WaitHelper.WaitForElement(_driver, SignUpLocators.Input_password).SendKeys(password);
+        }
+
+        public void ClickCreateAccountBtn() => WaitHelper.ClickWhenClickable(_driver, SignUpLocators.Btn_CreateAccount);
+
+        public void VerifyToastMessage(string expectedMessage)
+        {
+            string toastMessage = WaitHelper.WaitForElement(_driver, SignUpLocators.AccountCreated_ToastMessage).Text;
+            Assert.That(toastMessage, Does.Contain(expectedMessage), "Toast Message was not as expected.");
         }
     }
 }

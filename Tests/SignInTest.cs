@@ -1,9 +1,4 @@
 ﻿using OpenQA.Selenium;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TestDino.Base;
 using TestDino.Locators;
 using TestDino.Utilities;
@@ -13,7 +8,7 @@ namespace TestDino.Tests
     [TestFixture]
     public class SignInTest : UnauthenticatedBaseTest
     {
-        [OneTimeSetUp]
+        [SetUp]
         public void Setup()
         {
             _driver.Navigate().GoToUrl(ConfigManager.BaseUrl + "/login");
@@ -29,43 +24,16 @@ namespace TestDino.Tests
             // read credentials from JSON file
             var credentials = JsonHelper.GetTestData<Dictionary<string, string>>("Credentials.json", "ValidCredentials");
 
-            // fill the signin form using the credentials
+            // fill the signin form using valid credentials
             WaitHelper.WaitForElement(_driver, SignUpLocators.Input_email).SendKeys(credentials["email"]);
             WaitHelper.WaitForElement(_driver, SignUpLocators.Input_password).SendKeys(credentials["password"]);
 
             WaitHelper.ClickWhenClickable(_driver, SignInLocators.Btn_SignIn);
 
-            //assert toast message is displayed after successful signin
             string toastMessage = WaitHelper.WaitForElement(_driver, SignInLocators.SignIn_ToastMessage).Text;
             Assert.That(toastMessage, Is.EqualTo("Logged in successfully"));
 
-            // assert that the user is redirected to the home page after successful signin
             WaitHelper.WaitUntil(_driver, d => d.Url.Equals(ConfigManager.BaseUrl + "/"));
-        }
-
-        [Test]
-        public void LogOut_AfterSignIn()
-        {
-            _driver.Navigate().GoToUrl(ConfigManager.BaseUrl + "/account");
-            
-            WaitHelper.ClickWhenClickable(_driver, By.CssSelector("div[div = 'menu-item'] p"));
-
-            //assert toast message is displayed after successful signin
-            string toastMessage = WaitHelper.WaitForElement(_driver, SignInLocators.SignIn_ToastMessage).Text;
-            Assert.That(toastMessage, Is.EqualTo("Logged out successfully"));
-
-            WaitHelper.WaitUntil(_driver, d => d.Url.Equals(ConfigManager.BaseUrl + "/login"));
-        }
-    }
-
-    [TestFixture]
-    public class SignInNegativeTest : UnauthenticatedBaseTest
-    {
-        [SetUp]
-        public void Setup()
-        {
-            _driver.Navigate().GoToUrl(ConfigManager.BaseUrl + "/login");
-            WaitHelper.WaitForPageLoad(_driver);
         }
 
         [Test]
@@ -80,9 +48,34 @@ namespace TestDino.Tests
 
             WaitHelper.ClickWhenClickable(_driver, SignInLocators.Btn_SignIn);
 
-            //assert toast message is displayed after successful signin
             string toastMessage = WaitHelper.WaitForElement(_driver, SignInLocators.SignIn_ToastMessage).Text;
             Assert.That(toastMessage, Is.EqualTo("Invalid credentials"));
+        }
+    }
+
+    [TestFixture]
+    public class LogOutTest : AuthenticatedBaseTest
+    {
+        [Test]
+        public void LogOut_AfterSignIn()
+        {
+            _driver.Navigate().GoToUrl(ConfigManager.BaseUrl + "/account");
+
+            // username displayed in the UI (firstName + lastName)
+            string username = WaitHelper.WaitForElement(_driver, By.CssSelector("h2[data-testid= 'user-profile-name']")).Text;
+            // expected username from JSON file
+            string firstname = JsonHelper.GetTestData<string>("Credentials.json", "ValidCredentials.firstName");
+            string lastname = JsonHelper.GetTestData<string>("Credentials.json", "ValidCredentials.lastName");
+            // assert that the displayed username matches the expected username
+            Assert.That(username, Is.EqualTo($"{firstname} {lastname}"));
+
+            WaitHelper.ClickWhenClickable(_driver, By.CssSelector("div[div = 'menu-item'] p"));
+
+            //assert toast message is displayed after successful signin
+            string toastMessage = WaitHelper.WaitForElement(_driver, SignInLocators.SignIn_ToastMessage).Text;
+            Assert.That(toastMessage, Is.EqualTo("Logged out successfully"));
+
+            WaitHelper.WaitUntil(_driver, d => d.Url.Equals(ConfigManager.BaseUrl + "/login"));
         }
     }
 }

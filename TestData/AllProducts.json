@@ -1,0 +1,19 @@
+{
+  "Products": [
+    "Rode NT1-A",
+    "JBL Charge 4 Bluetooth Speaker",
+    "Seagate 4TB External Hard Drive",
+    "SanDisk Ultra Dual Drive 32GB USB 3.0",
+    "GoPro HERO10 Black",
+    "Logitech MX Master 3 Wireless Mouse",
+    "Sony WH-1000XM5",
+    "Bose QuietComfort 45",
+    "Audio-Technica AT2020",
+    "Apple"
+  ],
+  "InvalidSearchTerms": [
+    "xyzproductdoesnotexist123",
+    "@@@@invalidquery",
+    "00000000000"
+  ]
+}
